@@ -12,8 +12,6 @@ pub async fn request_image() -> Result<Image, Box<dyn std::error::Error>> {
     trace!("Response from the API: {}", &res);
     let json: Value = serde_json::from_str(&res)?;
 
-    println!("{}", json["images"][0]["width"]);
-
     let img = Builder::new()
         .source(crate::image::Source::WaifuIm)
         .post_url(json["images"][0]["source"].as_str().unwrap().to_string())
