@@ -41,8 +41,10 @@ pub enum Source {
 pub enum Extension {
     #[default]
     Unknown,
-    PNG,
-    JPG,
+    Png,
+    Jpg,
+    Gif,
+    Svg,
 }
 #[derive(Clone, Copy, Default, Debug, Serialize)]
 pub struct Size {
@@ -109,9 +111,14 @@ impl Builder  {
         self
     }
     #[must_use]
-    pub fn extension(mut self, ext: Extension) -> Self {
-        self.extension = ext;
-        self
+    pub fn extension(mut self, ext : String) -> Self {       
+        match ext.trim().to_lowercase().replace(".", "").as_str() {
+            "jpg" => {self.extension = Extension::Jpg; self},
+            "jpeg" => {self.extension = Extension::Jpg; self},
+            "png" => {self.extension = Extension::Png; self},
+            "gif" => {self.extension = Extension::Gif; self},
+            _ => {self}
+        }
     }
     #[must_use]
     pub fn is_nsfw(mut self, is_nsfw: bool) -> Self {
@@ -169,7 +176,7 @@ impl Distribution<Source> for Standard {
 }
 impl fmt::Display for Size {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}x{}", self.height, self.width)
+        write!(f, "{}x{}", self.width, self.height)
     }
 }
 impl Default for Builder {

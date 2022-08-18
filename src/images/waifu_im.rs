@@ -17,7 +17,7 @@ pub async fn request_image() -> Result<Image, Box<dyn std::error::Error>> {
         .post_url(json["images"][0]["source"].as_str().unwrap().to_string())
         .img_url(json["images"][0]["url"].as_str().unwrap().to_string())
         .preview_url(json["images"][0]["preview_url"].as_str().unwrap().to_string())
-        .extension(crate::image::Extension::JPG)
+        .extension(json["images"][0]["extension"].as_str().unwrap().to_string())
         .is_nsfw(json["images"][0]["is_nsfw"].as_bool().unwrap())
         .size(
             json["images"][0]["width"].as_u64().unwrap(),
