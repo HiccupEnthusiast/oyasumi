@@ -53,20 +53,36 @@ pub struct Size {
 }
 
 impl Image  {
-    pub async fn new (src: Source) -> Image {
-        match src {
-            Source::None => Image::default(),
-            Source::WaifuIm => {
-                match waifu_im::request_image().await {
-                    Ok(img) => img,
-                    _ => todo!(),
-                }
-            },
-        }
-    }
     pub async fn random() -> Image {
         let src: Source = rand::random();
         Image::new(src).await
+    }
+    pub async fn new (src: Source) -> Image {
+        Self::fetch_image(src, "random").await
+    }
+    pub async fn fetch_sfw() -> Image {
+        let src: Source = rand::random();
+        Self::fetch_image(src, "sfw").await
+    }
+    pub async fn fetch_nsfw() -> Image {
+        let src: Source = rand::random();
+        Self::fetch_image(src, "nsfw").await
+    }
+    async fn fetch_image(src: Source, nsfw: &str) -> Image {
+        match src {
+            Source::None => Image::default(),
+            Source::WaifuIm => {
+                let nsfw_tag = match nsfw {
+                    "random" => "null",
+                    "nsfw" => "true",
+                    _ => "false"
+                };
+                match waifu_im::request_image(nsfw_tag).await {
+                    Ok(img) => img,
+                    _ => todo!(), //retry function
+                }
+            }
+        }
     }
 }
 

@@ -4,11 +4,12 @@ use serde_json::Value;
 
 use crate::image::{Image, Builder};
 
-pub async fn request_image() -> Result<Image, Box<dyn std::error::Error>> {
+pub async fn request_image(nsfw: &str) -> Result<Image, Box<dyn std::error::Error>> {
     debug!(target: "get_events", "Retreiving image from waifu.im");
     
     let client = Client::new();
-    let res = client.get("https://api.waifu.im/random/").send().await?.text().await?;
+    let url = format!("https://api.waifu.im/random/?is_nsfw={}", nsfw);
+    let res = client.get(url).send().await?.text().await?;
     trace!("Response from the API: {}", &res);
     let json: Value = serde_json::from_str(&res)?;
 
