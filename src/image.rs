@@ -1,5 +1,6 @@
 use std::{fmt};
 use serde::Serialize;
+use rand::{distributions::{Distribution, Standard}, Rng,};
 use crate::images::*;
 
 #[derive(Clone, Default, Debug, Serialize)]
@@ -49,31 +50,6 @@ pub struct Size {
     pub height: u64,
 }
 
-impl fmt::Display for Image {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, 
-            "Image fetched from: {:?}
-            Artist: {}
-            Character: {}
-            Series: {}
-            Post URL: {}
-            Image URL: {}
-            Preview URL: {}
-            File type: {:?}
-            Is NSFW: {}
-            Size: {}", 
-            self.source, self.artist, self.character, 
-            self.series, self.post_url, self.img_url,
-            self.preview_url, self.extension, self.is_nsfw,
-            self.size)
-    }
-}
-impl fmt::Display for Size {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}x{}", self.height, self.width)
-    }
-}
-
 impl Image  {
     pub async fn new (src: Source) -> Image {
         match src {
@@ -85,6 +61,10 @@ impl Image  {
                 }
             },
         }
+    }
+    pub async fn random() -> Image {
+        let src: Source = rand::random();
+        Image::new(src).await
     }
 }
 
@@ -160,6 +140,38 @@ impl Builder  {
     }
 }
 
+
+impl fmt::Display for Image {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, 
+            "Image fetched from: {:?}, \
+            Artist: {}, \
+            Character: {}, \
+            Series: {}, \
+            Post URL: {}, \
+            Image URL: {}, \
+            Preview URL: {}, \
+            File type: {:?}, \
+            Is NSFW: {}, \
+            Size: {}", 
+            self.source, self.artist, self.character, 
+            self.series, self.post_url, self.img_url,
+            self.preview_url, self.extension, self.is_nsfw,
+            self.size)
+    }
+}
+impl Distribution<Source> for Standard {
+    fn sample<R: Rng + ?Sized>(&self, rng: &mut R) -> Source {
+        match rng.gen_range(0..=2) {
+            _ => Source::WaifuIm
+        }
+    }
+}
+impl fmt::Display for Size {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "{}x{}", self.height, self.width)
+    }
+}
 impl Default for Builder {
     fn default() -> Self {
         Self {
