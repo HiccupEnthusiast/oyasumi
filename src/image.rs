@@ -1,44 +1,107 @@
 use std::{fmt};
-use serde::Serialize;
+use serde::{Serialize, Deserialize};
 use rand::{distributions::{Distribution, Standard}, Rng,};
 use crate::images::*;
 
-#[derive(Clone, Default, Debug, Serialize)]
+/// Data obtained from a image endpoint
+#[derive(Clone, Default, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 pub struct Image {
+    /// What API was used to get the image
     pub source: Source,
+    /// Name of the artist who made the image
     pub artist: String,
+    /// Name of the main character in the image
     pub character: String,
+    /// Name of the source material
     pub series: String,
+    /// URL to the page where the image was taken, ideally it corresponds to
+    /// the source. If it does or not depends in what the API considers as the
+    /// "source" link
     pub post_url: String,
+    /// URL to the fullres image in the API's database
     pub img_url: String,
+    /// URL to a lighter and smaller version of the image, it has less resolution
+    /// so it uses less data and loads faster.
     pub preview_url: String,
+    /// What file format does the image have
     pub extension: Extension,
+    /// If the image is Not Suitable For Work
     pub is_nsfw: bool,
+    /// The size of the image in pixels (Width x Height)
     pub size: Size,
 }
+
+/// Builder helper to create a new Image struct, unnespecified fields will fallback
+/// to a default value
 #[derive(Debug)]
+#[non_exhaustive]
 pub struct Builder {
+    /// What API was used to get the image
     pub source: Source,
+    /// Name of the artist who made the image
     pub artist: String,
+    /// Name of the main character in the image
     pub character: String,
+    /// Name of the source material
     pub series: String,
+    /// URL to the page where the image was taken, ideally it corresponds to
+    /// the source. If it does or not depends in what the API considers as the
+    /// "source" link
     pub post_url: String,
+    /// URL to the fullres image in the API's database
     pub img_url: String,
+    /// URL to a lighter and smaller version of the image, it has less resolution
+    /// so it uses less data and loads faster.
     pub preview_url: String,
+    /// What file format does the image have
     pub extension: Extension,
+    /// If the image is Not Suitable For Work
     pub is_nsfw: bool,
+    /// The size of the image in pixels (Width x Height)
     pub size: Size,
 }
 
-
-#[derive(Clone, Copy, Default, Debug, Serialize)]
+/// Enum contaning the possible APIs that this library can use. 
+/// 
+/// None can be used if you created the Image struct programatically
+/// ```rust
+/// # use oyasumi::image::Builder;
+/// # use oyasumi::image::Source;
+/// # use oyasumi::image::Image;
+/// # #[tokio::main]
+/// # async fn main () { 
+///    let _my_image = Builder::new()
+///         .source(Source::None)
+///         // ...info about my drawing... //
+///         .build(); 
+/// #   assert!(true);
+/// # }
+/// ```
+/// Or if you want to obtain the default values of the Image struct (equivalent
+/// to `Image::default()`)
+/// ```rust
+/// # use oyasumi::image::{Image, Source};
+/// # #[tokio::main]
+/// # async fn main (){
+///     let _default_img = Image::new(Source::None);
+/// #   assert!(true);
+/// # }
+/// ```
+#[derive(Clone, Copy, Default, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 pub enum Source {
+    /// Default value if nothing is provided
     #[default]
     None,
+    /// Images from https://waifu.im/
     WaifuIm,
 }
-#[derive(Clone, Copy, Default, Debug, Serialize)]
+/// Enum contaning possible file formats
+#[derive(Clone, Copy, Default, Debug, Deserialize, Serialize)]
+#[non_exhaustive]
 pub enum Extension {
+    /// Default if nothing provided or the file extension is unknown
     #[default]
     Unknown,
     Png,
@@ -46,24 +109,45 @@ pub enum Extension {
     Gif,
     Svg,
 }
-#[derive(Clone, Copy, Default, Debug, Serialize)]
+/// Struct containing the dimensions of the images 
+#[derive(Clone, Copy, Default, Debug, Deserialize, Serialize)]
 pub struct Size {
     pub width: u64,
     pub height: u64,
 }
 
 impl Image  {
+    /// Get a random image from a random source, doesn't discriminate between SFW
+    /// ### Usage
+    /// ```rust
+    /// # use oyasumi::image::Image;
+    /// # #[tokio::main]
+    /// # async fn main() {
+    ///     let img = Image::random().await;
+    ///     if img.is_nsfw {
+    ///         // ..reject.. //
+    ///     } else {
+    ///         // ..accept.. //
+    ///     }
+    /// # assert!(true)
+    /// # } 
+    /// ```
+    /// 
     pub async fn random() -> Image {
         let src: Source = rand::random();
         Image::new(src).await
     }
+    /// Create an image from an specific source, doesn't discriminate between SFW and SFW
+    /// Using `Source::None` will return default Image
     pub async fn new (src: Source) -> Image {
         Self::fetch_image(src, "random").await
     }
+    /// Fetches a random image suitable for work from a random source
     pub async fn fetch_sfw() -> Image {
         let src: Source = rand::random();
         Self::fetch_image(src, "sfw").await
     }
+    /// Fetches a random not suitable for work image from a random source
     pub async fn fetch_nsfw() -> Image {
         let src: Source = rand::random();
         Self::fetch_image(src, "nsfw").await
